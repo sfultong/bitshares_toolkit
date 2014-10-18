@@ -66,14 +66,14 @@ namespace bts { namespace client {
     struct config
     {
        config( ) :
-          default_peers(vector<string>{"107.170.30.182:", "107.170.30.182:", "107.170.30.182:"}),
+          default_peers(vector<string>{"66.228.43.66:", "66.228.43.66:", "66.228.43.66:"}),
           mail_server_enabled(false),
           wallet_enabled(true),
           ignore_console(false),
           use_upnp(true),
           maximum_number_of_connections(BTS_NET_DEFAULT_MAX_CONNECTIONS) ,
           delegate_server( fc::ip::endpoint::from_string("0.0.0.0:0") ),
-          default_delegate_peers( vector<string>({"107.170.30.182:9988"}) )
+          default_delegate_peers( vector<string>({"66.228.43.66:9988"}) )
           {
 #ifdef BTS_TEST_NETWORK
               uint32_t port = BTS_NET_TEST_P2P_PORT + BTS_TEST_NETWORK_VERSION;

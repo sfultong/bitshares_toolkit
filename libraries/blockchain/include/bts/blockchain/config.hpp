@@ -19,10 +19,10 @@
  *
  *  Changing these parameters will result in a hard fork.
  */
-#define BTS_ADDRESS_PREFIX                                  "XTS"
-#define BTS_BLOCKCHAIN_SYMBOL                               "XTS"
-#define BTS_BLOCKCHAIN_NAME                                 "BitShares XTS"
-#define BTS_BLOCKCHAIN_DESCRIPTION                          "BitShares X Test Network"
+#define BTS_ADDRESS_PREFIX                                  "CSA"
+#define BTS_BLOCKCHAIN_SYMBOL                               "CSA"
+#define BTS_BLOCKCHAIN_NAME                                 "CoinShares"
+#define BTS_BLOCKCHAIN_DESCRIPTION                          "CoinShares Test Network"
 #define BTS_BLOCKCHAIN_PRECISION                            100000
 #define BTS_BLOCKCHAIN_MAX_TRANSACTION_EXPIRATION_SEC       (60*60*24*2)
 #define BTS_BLOCKCHAIN_MIN_YIELD_PERIOD_SEC                 (60*60*24) // 24 hours
