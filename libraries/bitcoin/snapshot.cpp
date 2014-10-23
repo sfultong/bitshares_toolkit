@@ -21,6 +21,13 @@ void prettyPrint(char c) {
     second = second < 10 ? second + '0' : second + 'A';
     std::cout << first << second;
 }
+bool equals(const std::array<char,20> &a, const std::array<char,20> &b) {
+    for (int i = 0; i < 20; i++) {
+        if (a[i] != b[i]) return false;
+    }
+    
+    return true;
+}
     
 snapshot_header::snapshot_header (void): 
     version(1),
@@ -127,6 +134,13 @@ snapshot::snapshot():
     header(),
     p2pkh_entries()
 { }
+snapshot::snapshot(std::ifstream* _ifstream):
+        header(),
+        p2pkh_entries()
+{
+    this->ifstream = _ifstream;
+    (*_ifstream) >> header;
+}
 void snapshot::add_p2pkh (const p2pkh& entry) {
     header.p2sh_offset += P2PKH_SIZE;
     header.multisig_offset += P2PKH_SIZE;
@@ -134,6 +148,18 @@ void snapshot::add_p2pkh (const p2pkh& entry) {
     header.num_claims++;
     header.total_claim_value += entry.amount;
     p2pkh_entries.push_back(entry);
+}
+p2pkh snapshot::get_p2pkh (const std::array<char,20> &hash) {
+    // TODO -- use binary search!!!!!!!!!!!!!
+    ifstream->seekg(header.p2pkh_offset);
+    p2pkh entry;
+    uint64_t offset = header.p2pkh_offset;
+    while (! equals(entry.hash, hash) && offset < header.p2sh_offset) {
+        (*ifstream) >> entry;
+        offset += P2PKH_SIZE;
+    }
+    
+    return equals(entry.hash, hash) ? entry : p2pkh();
 }
 std::ostream& operator<<(std::ostream &os, const snapshot &snap) {
     os << snap.header;

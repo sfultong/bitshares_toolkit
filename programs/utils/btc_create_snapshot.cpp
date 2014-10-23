@@ -21,10 +21,20 @@ int main(int argc, char** argv) {
 
     } else {
         std::cout << "Loading snapshot\n";
-        std::ifstream snapshot_bin("snapshot.bin", std::ifstream::binary);
+        std::ifstream* snapshot_bin = new std::ifstream("snapshot.bin", std::ifstream::binary);
+        snapshot snap(snapshot_bin);
+        prettyPrint(snap.header);
+        
+        std::array<char,20> hash;
+        for (int i = 0; i < 20; i++) {
+            hash[i] = 'a' + i;
+        }
+        std::cout << "found amount:\t" << snap.get_p2pkh(hash).amount;
+        /*
         snapshot* snap = new snapshot();
         snapshot_bin >> *snap;
         prettyPrint(*snap);
+         */
         /*
         snapshot_header *header = new snapshot_header();
         snapshot_bin >> *header;

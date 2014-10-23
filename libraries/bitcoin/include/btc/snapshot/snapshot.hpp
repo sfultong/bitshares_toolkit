@@ -2,7 +2,9 @@
 
 #include <array>
 #include <vector>
+#include <fstream>
 #include <stdint.h>
+
 
 namespace btc { namespace snapshot {
     
@@ -52,9 +54,12 @@ void prettyPrint (const p2pkh &entry);
 struct snapshot {
     snapshot_header         header;
     std::vector<p2pkh>      p2pkh_entries;
+    std::ifstream*          ifstream;
     
     snapshot ();
+    snapshot (std::ifstream* _ifstream);
     void add_p2pkh (const p2pkh& entry);
+    p2pkh get_p2pkh (const std::array<char,20> &hash);
 };
 std::ostream& operator<<(std::ostream &os, const snapshot &snap);
 std::istream& operator>>(std::istream &is, snapshot &snap);
