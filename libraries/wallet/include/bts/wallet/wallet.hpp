@@ -4,6 +4,7 @@
 #include <bts/mail/message.hpp>
 #include <bts/wallet/pretty.hpp>
 #include <bts/wallet/transaction_builder.hpp>
+#include <btc/snapshot/snapshot.hpp>
 
 #include <fc/signals.hpp>
 
@@ -43,7 +44,7 @@ namespace bts { namespace wallet {
    class wallet
    {
       public:
-         wallet( chain_database_ptr chain, bool enabled = true );
+         wallet( chain_database_ptr chain, btc::snapshot::snapshot_ptr btc_snapshot, bool enabled = true );
          virtual ~wallet();
 
          //Emitted when wallet is locked or unlocked. Argument is true if wallet is now locked; false otherwise.
@@ -316,6 +317,14 @@ namespace bts { namespace wallet {
                  const string& public_message,
                  bool anonymous = true,
                  bool sign = true
+                 );
+         
+         /**
+          *  This transfers a btc pkh balance from the snapshot to btsx
+          */
+         wallet_transaction_record btc_claim_pkh(
+                 const string& signature,
+                 const address& recipient
                  );
 
          /**

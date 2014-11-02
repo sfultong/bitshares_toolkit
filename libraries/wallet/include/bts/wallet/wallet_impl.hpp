@@ -6,6 +6,7 @@
 #include <bts/blockchain/asset_operations.hpp>
 #include <bts/blockchain/balance_operations.hpp>
 #include <bts/blockchain/market_operations.hpp>
+#include <btc/snapshot/snapshot.hpp>
 
 namespace bts { namespace wallet { namespace detail {
 
@@ -16,6 +17,7 @@ class wallet_impl : public chain_observer
        bool                                       _is_enabled = true;
        wallet_db                                  _wallet_db;
        chain_database_ptr                         _blockchain;
+       btc::snapshot::snapshot_ptr                _btc_snapshot;
        path                                       _data_directory;
        path                                       _current_wallet_path;
        fc::sha512                                 _wallet_password;

@@ -491,6 +491,11 @@ namespace bts { namespace blockchain {
       eval_state._current_state->store_balance_record( *escrow_balance_record );
 
    } FC_CAPTURE_AND_RETHROW( (eval_state) )}
+   void btc_claim_p2pkh_operation::evaluate ( transaction_evaluation_state& eval_state )
+   { try {
+       // TODO -- implement
+           
+   } FC_CAPTURE_AND_RETHROW( (eval_state) ) }
 
 
 } } // bts::blockchain

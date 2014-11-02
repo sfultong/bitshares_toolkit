@@ -5,6 +5,7 @@
 #include <bts/rpc/rpc_client_api.hpp>
 #include <bts/api/common_api.hpp>
 #include <bts/rpc_stubs/common_api_client.hpp>
+#include <btc/snapshot/snapshot.hpp>
 #include <fc/thread/thread.hpp>
 #include <fc/log/logger_config.hpp>
 #include <memory>
@@ -135,6 +136,7 @@ namespace bts { namespace client {
 
 
          chain_database_ptr         get_chain()const;
+         btc::snapshot::snapshot_ptr  get_snapshot()const;
          wallet_ptr                 get_wallet()const;
          mail_client_ptr            get_mail_client()const;
          mail_server_ptr            get_mail_server()const;

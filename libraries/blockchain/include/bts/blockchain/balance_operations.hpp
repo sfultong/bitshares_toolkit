@@ -4,6 +4,7 @@
 #include <bts/blockchain/delegate_slate.hpp>
 #include <bts/blockchain/operations.hpp>
 #include <bts/blockchain/withdraw_types.hpp>
+#include <btc/snapshot/snapshot.hpp>
 
 namespace bts { namespace blockchain {
 
@@ -128,6 +129,16 @@ namespace bts { namespace blockchain {
 
       void evaluate( transaction_evaluation_state& eval_state );
    };
+   
+   struct btc_claim_p2pkh_operation
+   {
+       static const operation_type_enum type;
+       
+       //btc_address      claimed_from;
+       address          claimed_to;
+       
+       void evaluate( transaction_evaluation_state& eval_state );
+   };
 
 
 } } // bts::blockchain
@@ -138,4 +149,5 @@ FC_REFLECT( bts::blockchain::deposit_operation, (amount)(condition) )
 FC_REFLECT( bts::blockchain::burn_operation, (amount)(account_id)(message)(message_signature) )
 FC_REFLECT( bts::blockchain::withdraw_all_operation, (balance_id)(claim_input_data) )
 FC_REFLECT( bts::blockchain::release_escrow_operation, (escrow_id)(released_by)(amount_to_receiver)(amount_to_sender) )
+FC_REFLECT( bts::blockchain::btc_claim_p2pkh_operation, (claimed_to) )
 

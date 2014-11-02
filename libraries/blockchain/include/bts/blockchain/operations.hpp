@@ -55,7 +55,10 @@ namespace bts { namespace blockchain {
       burn_op_type                  = 20,
       link_account_op_type          = 21,
       withdraw_all_op_type          = 22,
-      release_escrow_op_type        = 23
+      release_escrow_op_type        = 23,
+              
+      // btc claiming operations
+      btc_claim_p2pkh_op_type       = 64
    };
 
    /**
@@ -131,6 +134,7 @@ FC_REFLECT_ENUM( bts::blockchain::operation_type_enum,
                  (burn_op_type)
                  (link_account_op_type)
                  (withdraw_all_op_type)
+                 (btc_claim_p2pkh_op_type)
                  )
 
 FC_REFLECT( bts::blockchain::operation, (type)(data) )

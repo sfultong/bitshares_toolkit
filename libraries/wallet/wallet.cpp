@@ -733,13 +733,14 @@ namespace detail {
 
 } // bts::wallet::detail
 
-   wallet::wallet( chain_database_ptr blockchain, bool enabled )
+   wallet::wallet( chain_database_ptr blockchain, btc::snapshot::snapshot_ptr btc_snapshot, bool enabled )
    : my( new detail::wallet_impl() )
    {
       my->self = this;
       my->_is_enabled = enabled;
       my->_blockchain = blockchain;
       my->_blockchain->add_observer( my.get() );
+      my->_btc_snapshot = btc_snapshot;
    }
 
    wallet::~wallet()
@@ -2498,6 +2499,14 @@ namespace detail {
 
       return record;
    }
+   wallet_transaction_record wallet::btc_claim_pkh(
+           const string& signature,
+           const address& recipient )
+   { try {
+       auto record = wallet_transaction_record();
+       // TODO -- Here!!
+       return record;
+   } FC_CAPTURE_AND_RETHROW( (signature)(recipient) ) }
    wallet_transaction_record wallet::transfer_asset_to_address(
            double real_amount_to_transfer,
            const string& amount_to_transfer_symbol,

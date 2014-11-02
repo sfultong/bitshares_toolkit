@@ -29,7 +29,7 @@ int main(int argc, char** argv) {
         for (int i = 0; i < 20; i++) {
             hash[i] = 'a' + i;
         }
-        std::cout << "found amount:\t" << snap.get_p2pkh(hash).amount;
+        std::cout << "found amount:\t" << snap.get_p2pkh(hash).amount << "\n";
         /*
         snapshot* snap = new snapshot();
         snapshot_bin >> *snap;

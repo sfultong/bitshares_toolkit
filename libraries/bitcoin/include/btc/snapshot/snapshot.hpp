@@ -3,6 +3,7 @@
 #include <array>
 #include <vector>
 #include <fstream>
+#include <memory>
 #include <stdint.h>
 
 
@@ -60,10 +61,14 @@ struct snapshot {
     snapshot (std::ifstream* _ifstream);
     void add_p2pkh (const p2pkh& entry);
     p2pkh get_p2pkh (const std::array<char,20> &hash);
+    bool validate_pkh_claim (std::string& prefix, std::string& claim, std::string& signature);
 };
 std::ostream& operator<<(std::ostream &os, const snapshot &snap);
 std::istream& operator>>(std::istream &is, snapshot &snap);
 void prettyPrint (const snapshot &snap);
 snapshot* makeTestSnapshot();
+
+typedef std::shared_ptr<snapshot> snapshot_ptr;
+typedef std::array<char,20> btc_address;
     
 } } // btc::snapshot

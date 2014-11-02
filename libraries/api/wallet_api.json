@@ -1774,6 +1774,24 @@
              }
          ],
          "prerequisites" : ["wallet_unlocked"]
+      },
+      {
+          "method_name" : "btc_claim_p2pkh",
+          "description" : "Claims an amount from a bitcoin keyhash in the bitcoin snapshot.",
+          "return_type" : "transaction_record",
+          "parameters"  : [
+              {
+                  "name" : "signature",
+                  "type" : "string",
+                  "description" : "The signature for the claim."
+              },
+              {
+                  "name" : "recipient",
+                  "type" : "address",
+                  "description" : "The address to receive the balance from the bitcoin snapshot."
+              }              
+          ],
+          "prerequisites" : ["wallet_unlocked"]
       }
     ]
 }

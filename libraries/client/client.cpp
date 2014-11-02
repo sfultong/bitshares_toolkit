@@ -726,6 +726,7 @@ config load_config( const fc::path& datadir, bool enable_ulog )
             std::unique_ptr<bts::net::chain_server>                 _chain_server = nullptr;
             std::unique_ptr<bts::net::upnp_service>                 _upnp_service = nullptr;
             chain_database_ptr                                      _chain_db = nullptr;
+            btc::snapshot::snapshot_ptr                             _snapshot = nullptr;
             unordered_map<transaction_id_type, signed_transaction>  _pending_trxs;
             wallet_ptr                                              _wallet = nullptr;
             std::shared_ptr<bts::mail::server>                      _mail_server = nullptr;
@@ -1775,8 +1776,12 @@ config load_config( const fc::path& datadir, bool enable_ulog )
           fc::remove_all(data_dir / "chain");
           my->_chain_db->open(data_dir / "chain", genesis_file_path, reindex_status_callback);
         }
+        
+        // load snapshot
+        std::ifstream* btc_snapshot = new std::ifstream((data_dir / "snapshot.bin").preferred_string(), std::ifstream::binary);
+        my->_snapshot = std::make_shared<btc::snapshot::snapshot>( btc_snapshot );
 
-        my->_wallet = std::make_shared<bts::wallet::wallet>( my->_chain_db, my->_config.wallet_enabled );
+        my->_wallet = std::make_shared<bts::wallet::wallet>( my->_chain_db, my->_snapshot, my->_config.wallet_enabled );
         my->_wallet->set_data_directory( data_dir / "wallets" );
 
         if (my->_config.mail_server_enabled)
@@ -1808,6 +1813,7 @@ config load_config( const fc::path& datadir, bool enable_ulog )
     chain_database_ptr client::get_chain()const { return my->_chain_db; }
     bts::rpc::rpc_server_ptr client::get_rpc_server()const { return my->_rpc_server; }
     bts::net::node_ptr client::get_node()const { return my->_p2p_node; }
+    btc::snapshot::snapshot_ptr client::get_snapshot()const { return my->_snapshot; }
 
     fc::variant_object version_info()
     {
@@ -2386,6 +2392,8 @@ config load_config( const fc::path& datadir, bool enable_ulog )
     {
         return _wallet->mail_open(recipient, ciphertext);
     }
+    
+    
 
     map<balance_id_type, balance_record> detail::client_impl::blockchain_list_balances( const string& first, uint32_t limit )const
     {
@@ -4085,6 +4093,14 @@ config load_config( const fc::path& datadir, bool enable_ulog )
       const auto record = _wallet->publish_feeds( delegate_account, real_amount_per_xts );
       network_broadcast_transaction( record.trx );
       return record;
+   }
+   wallet_transaction_record client_impl::btc_claim_p2pkh( const std::string& signature,
+                                                           const address& recipient)
+   {
+       //TODO -- here
+       const auto record = _wallet->btc_claim_pkh( signature, recipient );
+       network_broadcast_transaction( record.trx );
+       return record;
    }
 
    vector<burn_record> client_impl::blockchain_get_account_wall( const string& account )const
