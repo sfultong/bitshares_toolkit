@@ -1,20 +1,25 @@
 #include <btc/snapshot/snapshot.hpp>
 
-//#include <cstdlib>
 #include <iostream>
 #include <iomanip>
-/*
-#include <iomanip>
-#include <fstream>
- */ 
 #include <iterator>
+#include <cstring>
 #include <fc/crypto/base58.hpp>
+#include <openssl/ec.h>
+#include <openssl/ecdsa.h>
+#include <openssl/sha.h>
+#include <openssl/ripemd.h> 
+#include <openssl/obj_mac.h>
+
+
 
 #define P2PKH_SIZE 28
+/*
 //should be defined in bn.h
 #define BN_zero(a)	(BN_set_word((a),0))
 
 #define NID_secp256k1		714
+ */
 
 namespace btc { namespace snapshot {
 
@@ -24,6 +29,13 @@ void prettyPrint(char c) {
     char second = c & 0x0F;
     second = second < 10 ? second + '0' : second + 'A';
     std::cout << first << second;
+}
+void prettyPrint(const unsigned char* c, int length) {
+    int i = 0;
+    do {
+        prettyPrint (*(c + i));
+        
+    } while (++i < length);
 }
 bool equals(const std::array<char,20> &a, const std::array<char,20> &b) {
     for (int i = 0; i < 20; i++) {
@@ -153,7 +165,7 @@ void snapshot::add_p2pkh (const p2pkh& entry) {
     header.total_claim_value += entry.amount;
     p2pkh_entries.push_back(entry);
 }
-p2pkh snapshot::get_p2pkh (const std::array<char,20> &hash) {
+p2pkh* snapshot::get_p2pkh (const std::array<char,20> &hash) {
     // TODO -- use binary search!!!!!!!!!!!!!
     ifstream->seekg(header.p2pkh_offset);
     p2pkh entry;
@@ -163,7 +175,7 @@ p2pkh snapshot::get_p2pkh (const std::array<char,20> &hash) {
         offset += P2PKH_SIZE;
     }
     
-    return equals(entry.hash, hash) ? entry : p2pkh();
+    return equals(entry.hash, hash) ? new p2pkh(entry) : nullptr;
 }
 
 // taken directly from bitcoin source (key.cpp)
@@ -293,26 +305,36 @@ bool CPubKey::RecoverCompact(const uint256 &hash, const std::vector<unsigned cha
  */
 
 
-bool snapshot::validate_pkh_claim (std::string& prefix, std::string& claim, std::string& signature) {
+p2pkh* snapshot::get_p2pkh (std::string& claim, std::string& signature) {
     // first, take the sha256 hash of the message twice
-    char* c_str = claim.c_str();
-    char* hash1 = char[32];
-    SHA256(claim.c_str(), claim.size(), hash1);
-    char* hash2 = char[32];
+
+    unsigned char c1[32];
+    unsigned char* hash1 = c1;
+    SHA256((unsigned char*) claim.c_str(), claim.size(), hash1);
+    unsigned char c2[32];
+    unsigned char* hash2 = c2;
     SHA256(hash1, 32, hash2);
+    std::cout << "message hash is ";
+    prettyPrint(hash2, 32);
+    std::cout << "\n";
     
     // recover public key from message and signature
-    char* sig_chars = signature.c_str();
+    const unsigned char* sig_chars = (const unsigned char*) signature.c_str();
     EC_KEY *pkey = EC_KEY_new_by_curve_name(NID_secp256k1);
     int rec = (sig_chars[0] - 27) & ~4;
-    char* p64 = &sig_chars[1];
-    if (rec<0 || rec>=3 ) return false;  //EXIT POINT
+    const unsigned char* p64 = &sig_chars[1];
+    std::cout << "rec is " << rec << "\n"; 
+    if (rec<0 || rec>=3 ) return nullptr;  //EXIT POINT
     ECDSA_SIG *sig = ECDSA_SIG_new();
     BN_bin2bn(&p64[0],  32, sig->r);
     BN_bin2bn(&p64[32], 32, sig->s);
     bool ret = ECDSA_SIG_recover_key_GFp(pkey, sig, hash2, 32, rec, 0) == 1;
     ECDSA_SIG_free(sig);
-    if (! ret) return false;             //EXIT POINT
+    if (! ret) {
+        std::cout << "failed to recover public key\n";
+    }
+    if (! ret) return nullptr;             //EXIT POINT
+    std::cout << "recovered key\n";
 
     // get octet stream version of public key
     bool fCompressed = (sig_chars[0] - 27) & 4;
@@ -324,13 +346,25 @@ bool snapshot::validate_pkh_claim (std::string& prefix, std::string& claim, std:
     unsigned char *pbegin = c;
     int nSize2 = i2o_ECPublicKey(pkey, &pbegin);
     assert(nSize == nSize2);
-
-    // todo... convert public key to PKH
-    // then look up PKH snapshot
+    std::cout << "got octet version of key\n";
     
-
-    // TODO!!!!
-    return true;
+    // generate the PKH 
+    unsigned char c3[32];
+    unsigned char* hash3 = c3;
+    SHA256(pbegin, 65, hash3);
+    unsigned char c4[20];
+    unsigned char* hash4 = c4;
+    RIPEMD160(hash3, 32, hash4);
+    
+    //debug
+    std::cout << "Found PKH: ";
+    prettyPrint(hash4, 20);
+    std::cout <<  "\n";
+    
+    // find in snapshot
+    std::array<char,20> pkh;
+    std::memcpy (pkh.data(),hash4,20);
+    return get_p2pkh(pkh);
 }
 std::ostream& operator<<(std::ostream &os, const snapshot &snap) {
     os << snap.header;
@@ -342,9 +376,11 @@ std::ostream& operator<<(std::ostream &os, const snapshot &snap) {
 std::istream& operator>>(std::istream &is, snapshot &snap) {
     is >> snap.header;
     p2pkh entry;
+    std::cout << "loaded header\n";
     for (uint64_t i = BTC_SNAPSHOT_HEADER_OFFSET; i < snap.header.p2sh_offset; i += P2PKH_SIZE) {
         is >> entry;
         snap.p2pkh_entries.push_back(p2pkh(entry));
+        std::cout << "loaded entry\n";
     }
     return is;
 }
@@ -357,11 +393,17 @@ void prettyPrint (const snapshot &snap) {
 }
 snapshot* makeTestSnapshot () {
     snapshot* snap = new snapshot();
-    std::array<char,20> hash;
-    for (int i = 0; i < 20; i++) {
-        hash[i] = 'a' + i;
+    std::array<char,20> hash1;
+    std::array<char,20> hash2;
+    std::vector<char> pkh1 = fc::from_base58("1KBYtRBmVnjV6TzjyBu53JeXhNYAWfncbf");
+    std::vector<char> pkh2 = fc::from_base58("15GqvW64qWwehgfTqWmzhum76d1RQhEJKj");
+    for (int i = 1; i < 21; i++) {
+        hash1[i - 1] = pkh1[i];
+        hash2[i - 1] = pkh2[i];
     }
-    snap->add_p2pkh(p2pkh(hash, 50));
+    
+    snap->add_p2pkh(p2pkh(hash1, 11));
+    snap->add_p2pkh(p2pkh(hash2, 22));
     
     return snap;
 }

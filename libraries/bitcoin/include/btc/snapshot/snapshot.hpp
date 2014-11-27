@@ -60,8 +60,8 @@ struct snapshot {
     snapshot ();
     snapshot (std::ifstream* _ifstream);
     void add_p2pkh (const p2pkh& entry);
-    p2pkh get_p2pkh (const std::array<char,20> &hash);
-    bool validate_pkh_claim (std::string& prefix, std::string& claim, std::string& signature);
+    p2pkh* get_p2pkh (const std::array<char,20> &hash);
+    p2pkh* get_p2pkh (std::string& claim, std::string& signature);
 };
 std::ostream& operator<<(std::ostream &os, const snapshot &snap);
 std::istream& operator>>(std::istream &is, snapshot &snap);
